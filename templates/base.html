@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasker App</title>
+    <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa"
+        crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <p>Hi, {{userName}} {{userID}}</p>
+    {% if canAdd == True %}
+    <form action="/add" method="POST">
+        <label>Add a List</label><br>
+        <input name="listname" type="text" placeholder="Enter List Name...">
+        <button type="submit">Add</button>
+    </form>
+    {% endif %}
+
+    <div class="row mx-2 mt-5">
+        {% for todo in todo_list %}
+        <div class="col-2 border border-1 mx-2 py-2">
+
+            <div class="d-flex justify-content-between">
+                <p class="card-title fw-semibold" style="font-size: 17px">{{todo.listname}}</p>
+                <div class="dropdown">
+                    <div class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+
+                    </div>
+
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/edit/{{ todo.id }}">Edit</a></li>
+                        <li><a class="dropdown-item" href="/deletelist/{{ todo.id }}">Delete</a></li>
+                    </ul>
+                </div>
+            </div>
+
+
+            {% for task in task_list %}
+            {% if todo.id == task.belongTo %}
+            <div class="card mb-2 bg-success text-bg-primary {{'bg-danger' if task.flag==0 }} ">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <p class="card-title fw-semibold" style="font-size: 17px">{{task.title}}</p>
+                        <div class="dropdown">
+                            <div class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+
+                            </div>
+
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/update/{{ task.id }}" data-bs-toggle="modal"
+                                        data-bs-target="#editModal{{task.id}}">Edit<a></li>
+                                <li><a class="dropdown-item" href="/delete/{{ task.id }}">Delete</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <p class="card-text" style="font-size: 13px">{{task.content}}</p>
+                    <Pclass="card-text" style="font-size: 13px">Deadline: {{task.deadline}}</P>
+
+                </div>
+            </div>
+            <div class="modal fade py-3" id="editModal{{task.id}}" tabindex="-1" aria-labelledby="exampleModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Add Card</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form action="/update/{{task.id}}" method="POST">
+                            <div class="container pt-3">    
+                                <div class="mb-3">
+                                    <select class="form-select" aria-label="Default select example" value="{{task.belongTo}}"
+                                        name="belongTo">
+                                        {% for todo in todo_list %}
+                                        {%if todo.id == task.belongTo%}
+                                        <option value="{{todo.id}}" selected>{{todo.listname}}</option>
+                    
+                                        {%else%}
+                                        <option value="{{todo.id}}">{{todo.listname}}</option>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <input class="form-control" type="text" value="{{task.title}}" placeholder="Enter Title" name="title">
+                                </div>
+                                <div class="mb-3">
+                    
+                                    <input class="form-control" type="text" value="{{task.content}}" placeholder="Enter Content"
+                                        name="content">
+                                </div>
+                                <div class="mb-3">
+                    
+                                    <input class="form-control" type="date" value="{{task.deadline}}" placeholder="Enter Deadline"
+                                        name="deadline">
+                                </div>
+                                <div class="mb-3">
+                    
+                                    <select class="form-select" aria-label="Default select example" value="{{task.flag}}" name="flag">
+                                        {%if task.flag == 0%}
+                                        <option value="0" selected>Pending</option>
+                                        <option value="1">Completed</option>
+                                        {%elif task.flag == 1%}
+                                        <option value="0">Pending</option>
+                                        <option value="1" selected>Completed</option>
+                                        {% endif %}
+                                    </select>
+                                </div>
+                    
+                            </div>
+                            <div class="text-center my-3">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Edit Task</button>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+            <div class="text-center">
+                <button type="button" data-bs-toggle="modal" data-bs-target="#exampleModal"
+                    class="btn btn-primary rounded-circle">+</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Add Card</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="/addtask" method="POST">
+                    <div class="modal-body">
+
+                        <div class="mb-3">
+                            <select class="form-select" aria-label="Default select example" name="belongTo">
+                                {% for todo in todo_list %}
+                                <option value="{{todo.id}}">{{todo.listname}}</option>
+
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <input class="form-control" type="text" placeholder="Enter Title" name="title">
+                        </div>
+                        <div class="mb-3">
+
+                            <input class="form-control" type="text" placeholder="Enter Content" name="content">
+                        </div>
+                        <div class="mb-3">
+
+                            <input class="form-control" type="date" placeholder="Enter Deadline" name="deadline">
+                        </div>
+                        <div class="mb-3">
+
+                            <select class="form-select" aria-label="Default select example" name="flag">
+                                <option value="0">Pending</option>
+                                <option value="1">Completed</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Add Task</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>
