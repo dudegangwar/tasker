@@ -11,6 +11,7 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 taskerdb = SQLAlchemy(app)
+app.app_context().push()
 
 userID = 0
 userName = ''
